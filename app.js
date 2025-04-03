@@ -4,22 +4,10 @@ const app = express();
 
 
 
-app.get("/user", (req, res) => {
+app.get("/user/:userId/:name/:password", (req, res) => {
     // res.send("Hello Surya welcome to home page")
-    res.send({ firstName: "Surya", lastName: "Kumar" })
-})
-
-app.post("/user", (req, res) => {
-    res.send("Saved data to the DB successfully")
-})
-
-app.delete("/user", (req, res) => {
-    res.send("Deleted data from the DB successfully")
-})
-
-
-app.use("/info", (req, res) => {
-    res.send("Hello Surya welocme to info page")
+    // console.log(req.params);
+    res.send(req.params)
 })
 
 
