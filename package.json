@@ -1,0 +1,22 @@
+{
+  "name": "devtinder_backend",
+  "version": "1.0.0",
+  "description": "devtinder backend code",
+  "main": "app.js",
+  "scripts": {
+    "dev" : "nodemon app.js",
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "expressjs",
+    "mongoose",
+    "mongodb"
+  ],
+  "author": "surya kranthi kiran,tamarapilli",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
