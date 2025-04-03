@@ -3,11 +3,21 @@ const app = express();
 
 
 
-
-app.get("/user/:userId/:name/:password", (req, res) => {
-    // res.send("Hello Surya welcome to home page")
-    // console.log(req.params);
-    res.send(req.params)
+app.use("/user", (req, res, next) => {
+    res.send("Response 1")
+    next()
+}, [(req, res, next) => {
+    res.send("Response 2")
+    next()
+}, (req, res, next) => {
+    res.send("Response 3")
+    next()
+}], (req, res, next) => {
+    res.send("Response 4")
+    next()
+}, (req, res, next) => {
+    res.send("Response 5")
+    next()
 })
 
 
