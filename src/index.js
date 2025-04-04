@@ -13,7 +13,7 @@ app.post("/signup", async (req, res) => {
         res.send("User Created Successfully")
 
     } catch (error) {
-        res.status(500).send("Error creating user")
+        res.status(500).send("Error creating user: " + error.message)
     }
 })
 
