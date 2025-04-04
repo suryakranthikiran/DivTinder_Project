@@ -5,11 +5,9 @@ const User = require("./models/user.js")
 app.use(express.json()) // Middleware to parse JSON request body
 
 app.post("/signup", async (req, res) => {
-
-    // console.log(req.body);
     // Creating a new instance of User Model
-    const user = new User(req.body);
     try {
+        const user = new User(req.body);
         // this function will return a promise to us
         await user.save()
         res.send("User Created Successfully")
@@ -18,6 +16,35 @@ app.post("/signup", async (req, res) => {
         res.status(500).send("Error creating user")
     }
 })
+
+// finding user on DB using mail
+
+app.get("/user", async (req, res) => {
+    const userMail = req.body.email;
+    try {
+        const user = await User.findOne({ email: userMail });
+        if (user.length === 0) {
+            return res.status(404).send("User not found");
+        } else {
+            res.send(user);
+        }
+    } catch (error) {
+        res.status(500).send("Error finding user")
+    }
+})
+
+
+// Feed API - GET / feed - get all users from the database
+app.get("/feed", async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.send(users);
+    } catch (error) {
+        res.status(500).send("Error finding users")
+
+    }
+}
+)
 
 
 connectDB().then(() => {
