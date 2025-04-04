@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
+require('dotenv').config();
 
-const dbString = "mongodb+srv://tskranthikiran:kYrYLtVOkFeP4C5P@cluster0.i4bz1.mongodb.net/devTinder"
+
 const connectDB = async () => {
-    await mongoose.connect(dbString, {
+    await mongoose.connect(process.env.DBSTRING_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     });
