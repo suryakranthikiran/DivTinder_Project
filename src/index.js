@@ -4,8 +4,10 @@ const connectDB = require("./config/database.js")
 const User = require("./models/user.js")
 app.use(express.json()) // Middleware to parse JSON request body
 const bcrypt = require("bcrypt")
-
 const { validateSignUpData } = require("./utils/validation.js")
+const cookieParser = require("cookie-parser")
+app.use(cookieParser())
+const jwt = require("jsonwebtoken")
 
 
 // Signup Api - POST /signup - create a new user in the database
@@ -20,7 +22,7 @@ app.post("/signup", async (req, res) => {
 
         // encrypt the passsword
         const passwordHash = await bcrypt.hash(password, 10)
-        console.log(passwordHash);
+        // console.log(passwordHash);
 
         // Creating a new instance of User Model
         const user = new User({
@@ -50,10 +52,44 @@ app.post("/login", async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid) {
+
+        if (isPasswordValid) {
+
+            // create JWT token and send it to the user
+            const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790")
+            // console.log(token);
+            res.cookie("token", token)
+
+            res.send("User logged in successfully")
+        } else {
             throw new Error("Inavalid email or password")
         }
-        res.send("User logged in successfully")
+
+
+    } catch (error) {
+        res.status(400).send("ERROR : " + error.message)
+
+    }
+})
+
+// access user profile using JWT token
+app.get("/profile", async (req, res) => {
+    try {
+        const cookie = req.cookies;
+        const { token } = cookie
+        if (!token) {
+            throw new Error("Invalid token")
+        }
+        const decodedMessage = await jwt.verify(token, "DEV@Tinder$790")
+        // console.log(decodedMessage);
+        const { _id } = decodedMessage
+        // console.log("logged in user id: ", _id);
+        const user = await User.findById(_id)
+        if (!user) {
+            throw new Error("User not found")
+        }
+        // console.log(cookie);
+        res.send(user)
 
     } catch (error) {
         res.status(400).send("ERROR : " + error.message)
