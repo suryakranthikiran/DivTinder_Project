@@ -8,6 +8,7 @@ const { validateSignUpData } = require("./utils/validation.js")
 const cookieParser = require("cookie-parser")
 app.use(cookieParser())
 const jwt = require("jsonwebtoken")
+const { userAuth } = require("./middlewares/auth.js")
 
 
 // Signup Api - POST /signup - create a new user in the database
@@ -56,10 +57,9 @@ app.post("/login", async (req, res) => {
         if (isPasswordValid) {
 
             // create JWT token and send it to the user
-            const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790")
+            const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", { expiresIn: "7d" })
             // console.log(token);
-            res.cookie("token", token)
-
+            res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) })
             res.send("User logged in successfully")
         } else {
             throw new Error("Inavalid email or password")
@@ -73,102 +73,25 @@ app.post("/login", async (req, res) => {
 })
 
 // access user profile using JWT token
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
     try {
-        const cookie = req.cookies;
-        const { token } = cookie
-        if (!token) {
-            throw new Error("Invalid token")
-        }
-        const decodedMessage = await jwt.verify(token, "DEV@Tinder$790")
-        // console.log(decodedMessage);
-        const { _id } = decodedMessage
-        // console.log("logged in user id: ", _id);
-        const user = await User.findById(_id)
-        if (!user) {
-            throw new Error("User not found")
-        }
-        // console.log(cookie);
+        const user = req.user
         res.send(user)
+    } catch (error) {
+        res.status(400).send("ERROR : " + error.message)
+    }
+})
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+    try {
+        const user = req.user
+        res.send(`Connection request was sent by ${user.firstName} successfull`)
 
     } catch (error) {
         res.status(400).send("ERROR : " + error.message)
-
-    }
-})
-
-// finding user on DB using mail
-
-app.get("/user", async (req, res) => {
-    const userMail = req.body.email;
-    try {
-        const user = await User.findOne({ email: userMail });
-        if (user.length === 0) {
-            return res.status(404).send("User not found");
-        } else {
-            res.send(user);
-        }
-    } catch (error) {
-        res.status(500).send("Error finding user")
-    }
-})
-
-
-// Feed API - GET / feed - get all users from the database
-app.get("/feed", async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.send(users);
-    } catch (error) {
-        res.status(500).send("Error finding users")
-
     }
 }
 )
-
-// Delete the user from the database using the id
-
-app.delete("/user", async (req, res) => {
-    const userId = req.body.userId;
-    try {
-        const user = await User.findByIdAndDelete(userId);
-        if (!user) {
-            return res.status(404).send("User not found");
-        } else {
-            res.send("User deleted successfully");
-        }
-    } catch (error) {
-        res.status(500).send("Error deleting user")
-    }
-})
-
-// Update the data of the user 
-
-app.patch("/user/:userId", async (req, res) => {
-    const userId = req.params?.userId;
-    const data = req.body;
-    try {
-        const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
-        const isUpdateAllowed = Object.keys(data).every((key) => {
-            return ALLOWED_UPDATES.includes(key)
-        })
-        if (!isUpdateAllowed) {
-            throw new Error("Invalid updates")
-        }
-        if (data.skills.length > 10) {
-            throw new Error("Skills should be less than 10")
-        }
-        const user = await User.findByIdAndUpdate(userId, data, { returnDocument: 'after', runValidators: true });
-        // console.log(user);
-        if (!user) {
-            return res.status(404).send("User not found");
-        } else {
-            res.send("User updated successfully");
-        }
-    } catch (error) {
-        res.status(500).send("Error updating " + error.message)
-    }
-})
 
 connectDB().then(() => {
     console.log("Database connected successfully");
