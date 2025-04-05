@@ -7,6 +7,9 @@ const bcrypt = require("bcrypt")
 
 const { validateSignUpData } = require("./utils/validation.js")
 
+
+// Signup Api - POST /signup - create a new user in the database
+// This API will create a new user in the database
 app.post("/signup", async (req, res) => {
 
     try {
@@ -32,6 +35,29 @@ app.post("/signup", async (req, res) => {
 
     } catch (error) {
         res.status(400).send("ERROR : " + error.message)
+    }
+})
+
+app.post("/login", async (req, res) => {
+    try {
+
+        const { email, password } = req.body
+
+        // Validation of data in database whether the user is present or not
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            throw new Error("Invalid email or password")
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if (!isPasswordValid) {
+            throw new Error("Inavalid email or password")
+        }
+        res.send("User logged in successfully")
+
+    } catch (error) {
+        res.status(400).send("ERROR : " + error.message)
+
     }
 })
 
