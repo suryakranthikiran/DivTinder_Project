@@ -43,32 +43,24 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     try {
-
         const { email, password } = req.body
-
         // Validation of data in database whether the user is present or not
         const user = await User.findOne({ email: email })
         if (!user) {
             throw new Error("Invalid email or password")
         }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password)
-
+        const isPasswordValid = await user.validatePassword(password)
         if (isPasswordValid) {
-
             // create JWT token and send it to the user
-            const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", { expiresIn: "7d" })
+            const token = await user.getJWT()
             // console.log(token);
             res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) })
             res.send("User logged in successfully")
         } else {
             throw new Error("Inavalid email or password")
         }
-
-
     } catch (error) {
         res.status(400).send("ERROR : " + error.message)
-
     }
 })
 
