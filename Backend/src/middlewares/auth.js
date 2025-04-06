@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken")
 const User = require("../models/user")
+require('dotenv').config();
 const userAuth = async (req, res, next) => {
     // access user profile using JWT token
     try {
@@ -9,7 +10,7 @@ const userAuth = async (req, res, next) => {
             throw new Error("Invalid token")
         }
         // Validate the token
-        const decodedObj = await jwt.verify(token, "DEV@Tinder$790")
+        const decodedObj = await jwt.verify(token, process.env.SECRET_KEY)
         const { _id } = decodedObj
 
         // Find the user
