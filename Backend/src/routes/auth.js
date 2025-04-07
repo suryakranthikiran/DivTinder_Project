@@ -36,7 +36,6 @@ authRouter.post("/signup", async (req, res) => {
     }
 })
 
-
 authRouter.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body
@@ -58,6 +57,19 @@ authRouter.post("/login", async (req, res) => {
     } catch (error) {
         res.status(400).send("ERROR : " + error.message)
     }
+})
+
+authRouter.post("/logout", async (req, res) => {
+    try {
+        // Clear the JWT token from the cookies
+        res.clearCookie("token")
+        res.send("User logged out successfully")
+
+    } catch (error) {
+        res.status(400).send("ERROR : " + error.message)
+
+    }
+
 })
 
 module.exports = authRouter 
