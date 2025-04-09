@@ -15,18 +15,12 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
                 message: "Invalid Status Type : " + status
             })
         }
-
-
-
-
         const toUser = await User.findById(toUserId)
         if (!toUser) {
             return res.status(400).json({
                 message: "User not found"
             })
         }
-
-
         // if there is an existing request, 
         const existingRequest = await connectionRequestModel.findOne({
             $or: [
@@ -60,4 +54,38 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     }
 }
 )
+
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+        const { status, requestId } = req.params()
+        // validate the status
+        const allowedStatus = ["accepted", "rejected"]
+        if (!allowedStatus, includes(status)) {
+            return res.status(400).json({
+                message: "Status not allowed"
+            })
+        }
+        // surya => shows intreset in Elon
+
+        const connectionRequest = await connectionRequestModel.findOne({
+            _id: requestId,
+            toUserId: loggedInUser._id,
+            status: "interested"
+        })
+        if (!connectionRequest) {
+            return res.status(404).json({
+                message: "Connection request not found"
+            })
+        }
+        connectionRequest.status = status;
+        const data = await connectionRequest.save()
+        res.json({
+            message: "connection request " + status, data
+        })
+
+    } catch (error) {
+        res.status(400).send("ERROR: " + error.message)
+    }
+})
 module.exports = requestRouter 
