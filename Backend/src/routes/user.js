@@ -62,32 +62,33 @@ userRouter.get("/feed", userAuth, async (req, res) => {
         // Sarojini accepted the Rahul request so Sarojini profile can't display in Rahul Feed
 
         const loggedInUser = req.user;
+        const page = parseInt(req.query.page) || 1
+        let limit = parseInt(req.query.limit) || 10
+        limit = limit > 50 ? 50 : limit
+
+        const skip = (page - 1) * limit
 
         // find all connectionRequest either i have sent or i received
 
         const connectionRequest = await connectionRequestModel.find({
             $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }]
         }).select("fromUserId toUserId")
-
         const hideUsersFromFeed = new Set()
-
         connectionRequest.forEach(req => {
             hideUsersFromFeed.add(req.fromUserId.toString())
             hideUsersFromFeed.add(req.toUserId.toString())
         })
-
         const users = await user.find({
             $and: [
                 { _id: { $nin: Array.from(hideUsersFromFeed) } },
                 { _id: { $ne: loggedInUser._id } }
             ]
-        }).select("firstName lastName photoUrl gender age about skills")
+        }).select("firstName lastName photoUrl gender age about skills").skip(skip).limit(limit)
         res.send(users)
 
     } catch (error) {
         res.status(404).send("ERROR : ", error.message)
     }
-
 })
 
 module.exports = userRouter;
